@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>0056 槓桿複利決策系統 V12</title>
+    <title>0056 槓桿複利決策系統 V13</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -13,18 +13,18 @@
         .card { @apply bg-white rounded-3xl p-6 shadow-sm border border-slate-100; }
         .label-txt { @apply text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1 block; }
         .input-box { @apply w-full text-xl font-bold text-slate-800 outline-none border-b-2 border-slate-100 focus:border-blue-600 bg-transparent py-2 transition-all; }
-        /* 優化手機導覽列 */
         .tab-btn { @apply flex-1 py-3 text-xs md:text-sm font-bold text-slate-400 transition-all rounded-xl; }
         .tab-btn.active { @apply bg-white text-blue-600 shadow-md; }
-        /* 公式框樣式 */
         .formula-box { @apply bg-slate-50 border-l-4 border-blue-500 p-4 my-3 font-mono text-sm overflow-x-auto; }
+        /* 股災行樣式 */
+        .crash-row { @apply bg-red-50 !important; }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-10">
     <div class="max-w-6xl mx-auto">
         <header class="mb-6 text-center">
             <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">0056 槓桿複利精算系統</h1>
-            <p class="text-[10px] text-blue-600 font-bold uppercase tracking-[0.2em] mt-2">V12 - Optimized & Documentation</p >
+            <p class="text-[10px] text-red-600 font-bold uppercase tracking-[0.2em] mt-2">V13 - Market Crash Simulator</p>
         </header>
 
         <div class="flex bg-slate-200/50 p-1 rounded-[20px] mb-8 max-w-lg mx-auto">
@@ -40,6 +40,24 @@
                 <div class="card"><label class="label-txt">所得稅率</label><select id="taxRate" class="input-box"><option value="0.05">5%</option><option value="0.20">20%</option></select></div>
                 <div class="card"><label class="label-txt">年化殖利率 %</label><input type="number" id="yieldRate" value="7.5" step="0.1" class="input-box"></div>
                 <div class="card"><label class="label-txt">年化增值 %</label><input type="number" id="priceGrowth" value="3.5" step="0.1" class="input-box"></div>
+            </div>
+
+            <div class="card border-2 border-red-100 bg-red-50/30">
+                <h3 class="text-red-600 font-black text-xs mb-4 uppercase tracking-widest">⚠️ 股災壓力測試設定</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <label class="label-txt text-red-400">發生年度 (第幾年, 逗號隔開)</label>
+                        <input type="text" id="crashYears" value="3, 7" placeholder="例如: 3, 8" class="input-box border-red-100 focus:border-red-500">
+                    </div>
+                    <div>
+                        <label class="label-txt text-red-400">股災當年漲跌 % (負數代表下跌)</label>
+                        <input type="number" id="crashGrowth" value="-25" class="input-box border-red-100 focus:border-red-500">
+                    </div>
+                    <div>
+                        <label class="label-txt text-red-400">股災當年殖利率 %</label>
+                        <input type="number" id="crashYield" value="5.0" class="input-box border-red-100 focus:border-red-500">
+                    </div>
+                </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -65,14 +83,14 @@
                 <input type="range" id="years" min="1" max="30" value="10" oninput="document.getElementById('yearVal').innerText=this.value" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
             </div>
 
-            <button onclick="calculate()" class="w-full bg-slate-900 text-white font-black py-4 rounded-[1.5rem] shadow-xl hover:scale-[1.02] transition-all">執行資產模擬</button>
+            <button onclick="calculate()" class="w-full bg-slate-900 text-white font-black py-4 rounded-[1.5rem] shadow-xl hover:scale-[1.02] transition-all">執行資產模擬 (含壓力測試)</button>
 
             <div id="resultArea" class="hidden space-y-6">
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
-                    <div class="card bg-slate-900 text-white p-4"><p class="label-txt text-slate-500">期末總市值</p ><p id="sumMV" class="text-lg md:text-2xl font-black"></p ></div>
-                    <div class="card bg-blue-50 p-4"><p class="label-txt text-blue-600">預估淨資產</p ><p id="sumNet" class="text-lg md:text-2xl font-black text-blue-900"></p ></div>
-                    <div class="card bg-indigo-50 p-4"><p class="label-txt text-indigo-600">扣質押淨值</p ><p id="sumEquity" class="text-lg md:text-2xl font-black text-indigo-900"></p ></div>
-                    <div class="card bg-emerald-50 p-4"><p class="label-txt text-emerald-600">超額純利</p ><p id="sumProfit" class="text-lg md:text-2xl font-black text-emerald-900"></p ></div>
+                    <div class="card bg-slate-900 text-white p-4"><p class="label-txt text-slate-500">期末總市值</p><p id="sumMV" class="text-lg md:text-2xl font-black"></p></div>
+                    <div class="card bg-blue-50 p-4"><p class="label-txt text-blue-600">預估淨資產</p><p id="sumNet" class="text-lg md:text-2xl font-black text-blue-900"></p></div>
+                    <div class="card bg-indigo-50 p-4"><p class="label-txt text-indigo-600">扣質押淨值</p><p id="sumEquity" class="text-lg md:text-2xl font-black text-indigo-900"></p></div>
+                    <div class="card bg-emerald-50 p-4"><p class="label-txt text-emerald-600">超額純利</p><p id="sumProfit" class="text-lg md:text-2xl font-black text-emerald-900"></p></div>
                 </div>
                 <div class="card p-0 overflow-hidden shadow-2xl">
                     <div class="overflow-x-auto">
@@ -92,7 +110,7 @@
         <div id="risk-tab" class="tab-content space-y-6">
             <div class="card bg-slate-900 text-white p-6">
                 <h2 class="text-xl font-black">0056 元大高股息歷年表現</h2>
-                <p class="text-slate-400 text-xs mt-1">真實數據：2015-2024 (年度結算)</p >
+                <p class="text-slate-400 text-xs mt-1">真實數據：2015-2024 (年度結算)</p>
             </div>
             <div class="card p-0 overflow-hidden shadow-xl">
                 <div class="overflow-x-auto">
@@ -111,39 +129,18 @@
         <div id="info-tab" class="tab-content space-y-6">
             <div class="card">
                 <h2 class="text-xl font-black text-slate-900 mb-4">系統核心公式說明</h2>
-                
                 <section class="space-y-4">
                     <div>
-                        <h4 class="font-bold text-slate-700">1. 複利終值計算 (Compounding)</h4>
-                        <div class="formula-box">
-                            $FV = PV \times (1 + r)^n + PMT \times \frac{(1+r)^n - 1}{r}$
-                        </div>
-                        <p class="text-xs text-slate-500">本系統採用年度迭代法，將每年的配息淨現金流併入隔年投入。</p >
+                        <h4 class="font-bold text-slate-700">1. 股災壓力測試邏輯</h4>
+                        <p class="text-sm text-slate-600">當年度發生股災時，系統會強制將該年度的「年化增值 %」與「殖利率 %」替換為預設的股災參數，用以觀察高槓桿下維持率的變動風險。</p>
                     </div>
-
                     <div>
-                        <h4 class="font-bold text-slate-700">2. 信貸本息平均攤還 (PMT)</h4>
-                        <div class="formula-box">
-                            $Payment = \frac{P \times i \times (1+i)^n}{(1+i)^n - 1}$
-                        </div>
-                        <p class="text-xs text-slate-500">P=貸款額, i=月利率, n=總期數。反映每月固定的本利支出。</p >
+                        <h4 class="font-bold text-slate-700">2. 複利終值計算 (Compounding)</h4>
+                        <div class="formula-box">$FV = PV \times (1 + r)^n + PMT \times \frac{(1+r)^n - 1}{r}$</div>
                     </div>
-
                     <div>
-                        <h4 class="font-bold text-slate-700">3. 淨資產與超額純利</h4>
-                        <ul class="list-disc ml-5 text-sm text-slate-600 space-y-2">
-                            <li><strong>預估淨資產：</strong> 總市值 - (質押本金 + 信貸餘額)</li>
-                            <li><strong>扣質押淨值：</strong> 總市值 - 質押本金 (通常質押不還本，故獨立觀察)</li>
-                            <li><strong>超額純利：</strong> 預估淨資產 - (原始本金 + 歷年總再投入)</li>
-                        </ul>
-                    </div>
-
-                    <div>
-                        <h4 class="font-bold text-slate-700">4. 稅後配息補貼</h4>
-                        <div class="formula-box">
-                            Tax Benefit = (股息 \times 60\%) \times (8.5\% - 稅率)
-                        </div>
-                        <p class="text-xs text-slate-500">假設 60% 為應稅所得，計算 8.5% 可扣抵稅額與個人所得稅率之差額。</p >
+                        <h4 class="font-bold text-slate-700">3. 稅後配息補貼</h4>
+                        <div class="formula-box">Tax Benefit = (股息 \times 60\%) \times (8.5\% - 稅率)</div>
                     </div>
                 </section>
             </div>
@@ -169,8 +166,8 @@
             try {
                 const initialP = parseFloat(document.getElementById('principal').value) || 0;
                 const annualAdd = parseFloat(document.getElementById('annualAdd').value) || 0;
-                const yr = parseFloat(document.getElementById('yieldRate').value) / 100 || 0;
-                const pg = parseFloat(document.getElementById('priceGrowth').value) / 100 || 0;
+                const baseYield = parseFloat(document.getElementById('yieldRate').value) / 100 || 0;
+                const baseGrowth = parseFloat(document.getElementById('priceGrowth').value) / 100 || 0;
                 const tr = parseFloat(document.getElementById('taxRate').value) || 0.05;
                 const slp = parseFloat(document.getElementById('sLoanPerc').value) / 100 || 0;
                 const slr = parseFloat(document.getElementById('sLoanRate').value) / 100 || 0;
@@ -178,6 +175,11 @@
                 const plr = parseFloat(document.getElementById('pLoanRate').value) / 100 || 0;
                 const plt = parseInt(document.getElementById('pLoanTerm').value) || 7;
                 const obsY = parseInt(document.getElementById('years').value) || 10;
+
+                // 股災參數
+                const crashYears = document.getElementById('crashYears').value.split(',').map(x => parseInt(x.trim()));
+                const crashGrowth = parseFloat(document.getElementById('crashGrowth').value) / 100 || 0;
+                const crashYield = parseFloat(document.getElementById('crashYield').value) / 100 || 0;
 
                 const sLP = initialP * slp;
                 const mPLoan = (pla > 0) ? PMT(plr/12, plt*12, pla) : 0;
@@ -189,7 +191,11 @@
                 let tableHTML = "";
 
                 for (let i = 1; i <= obsY; i++) {
-                    let div = cMV * yr;
+                    const isCrash = crashYears.includes(i);
+                    const currentYield = isCrash ? crashYield : baseYield;
+                    const currentGrowth = isCrash ? crashGrowth : baseGrowth;
+
+                    let div = cMV * currentYield;
                     let sInt = sLP * slr;
                     let pPay = (i <= plt) ? aPLoan : 0;
                     let taxB = (div * 0.6) * (0.085 - tr);
@@ -200,14 +206,23 @@
                         cPLB = Math.max(0, cPLB - (aPLoan - interest));
                     } else { cPLB = 0; }
 
-                    cMV = cMV * (1 + pg) + netF + annualAdd;
+                    // 先算跌幅再加現金流
+                    cMV = cMV * (1 + currentGrowth) + netF + annualAdd;
                     cInv += annualAdd;
 
                     let nW = cMV - (sLP + cPLB);
                     let eAS = cMV - sLP;
                     let oP = nW - cInv;
 
-                    tableHTML += `<tr class="hover:bg-slate-50"><td class="p-4 font-bold text-slate-400">${i}Y</td><td class="p-4 font-bold text-slate-800">${cMV.toFixed(0)}萬</td><td class="p-4 font-black text-blue-600">${nW.toFixed(1)}萬</td><td class="p-4 font-black text-indigo-600 bg-indigo-50/10">${eAS.toFixed(1)}萬</td><td class="p-4 font-black text-emerald-600 bg-emerald-50/20">${oP.toFixed(1)}萬</td><td class="p-4 text-rose-400 font-bold">${cPLB.toFixed(0)}萬</td><td class="p-4 text-right font-bold ${netF < 0 ? 'text-red-400' : 'text-slate-400'}">${netF.toFixed(1)}萬</td></tr>`;
+                    tableHTML += `<tr class="hover:bg-slate-50 ${isCrash ? 'crash-row' : ''}">
+                        <td class="p-4 font-bold ${isCrash ? 'text-red-600' : 'text-slate-400'}">${i}Y ${isCrash ? '⚠️' : ''}</td>
+                        <td class="p-4 font-bold text-slate-800">${cMV.toFixed(0)}萬</td>
+                        <td class="p-4 font-black text-blue-600">${nW.toFixed(1)}萬</td>
+                        <td class="p-4 font-black text-indigo-600 bg-indigo-50/10">${eAS.toFixed(1)}萬</td>
+                        <td class="p-4 font-black text-emerald-600 bg-emerald-50/20">${oP.toFixed(1)}萬</td>
+                        <td class="p-4 text-rose-400 font-bold">${cPLB.toFixed(0)}萬</td>
+                        <td class="p-4 text-right font-bold ${netF < 0 ? 'text-red-400' : 'text-slate-400'}">${netF.toFixed(1)}萬</td>
+                    </tr>`;
                     
                     if (i === obsY) {
                         document.getElementById('sumMV').innerText = cMV.toFixed(0) + "萬";
