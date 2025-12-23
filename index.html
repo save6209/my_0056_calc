@@ -37,7 +37,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 <div class="card"><label class="label-txt">初始本金 (萬)</label><input type="number" id="principal" value="50" class="input-box"></div>
                 <div class="card bg-blue-50/50"><label class="label-txt text-blue-600">每年再投入 (萬)</label><input type="number" id="annualAdd" value="10" class="input-box text-blue-800 border-blue-200"></div>
-                <div class="card"><label class="label-txt">所得稅率</label><select id="taxRate" class="input-box"><option value="0.05">5%</option><option value="0.20">20%</option></select></div>
+                <div class="card"><label class="label-txt">所得稅率</label><select id="taxRate" class="input-box"><option value="0.05">5%</option><option value="0.12">12%</option></option><option value="0.20">20%</option></option><option value="0.30">30%</option></option><option value="0.40">40%</option></select></div>
                 <div class="card"><label class="label-txt">年化殖利率 %</label><input type="number" id="yieldRate" value="7.5" step="0.1" class="input-box"></div>
                 <div class="card"><label class="label-txt">年化增值 %</label><input type="number" id="priceGrowth" value="3.5" step="0.1" class="input-box"></div>
             </div>
@@ -62,7 +62,7 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="card border-l-8 border-indigo-500">
-                    <h3 class="font-black text-xs mb-3 text-indigo-400">質押負債 (不還本)</h3>
+                    <h3 class="font-black text-xs mb-3 text-indigo-400">質押負債 (不還本,僅用本金計算)</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <div><label class="label-txt">成數 %</label><input type="number" id="sLoanPerc" value="60" class="input-box"></div>
                         <div><label class="label-txt">利率 %</label><input type="number" id="sLoanRate" value="2.5" class="input-box"></div>
@@ -135,12 +135,28 @@
                         <p class="text-sm text-slate-600">當年度發生股災時，系統會強制將該年度的「年化增值 %」與「殖利率 %」替換為預設的股災參數，用以觀察高槓桿下維持率的變動風險。</p>
                     </div>
                     <div>
-                        <h4 class="font-bold text-slate-700">2. 複利終值計算 (Compounding)</h4>
-                        <div class="formula-box">$FV = PV \times (1 + r)^n + PMT \times \frac{(1+r)^n - 1}{r}$</div>
+                        <h4 class="font-bold text-slate-700">2. 信貸本息平均攤還 (PMT)</h4>
+                        <div class="formula-box">
+                            Payment = (P * i (1+i)^n) / ((1+i)^n - 1)
+                        </div>
+                        <p class="text-xs text-slate-500">P=貸款額, i=月利率, n=總期數。反映每月固定的本利支出。</p >
                     </div>
+
                     <div>
-                        <h4 class="font-bold text-slate-700">3. 稅後配息補貼</h4>
-                        <div class="formula-box">Tax Benefit = (股息 \times 60\%) \times (8.5\% - 稅率)</div>
+                        <h4 class="font-bold text-slate-700">3. 淨資產與超額純利</h4>
+                        <ul class="list-disc ml-5 text-sm text-slate-600 space-y-2">
+                            <li><strong>預估淨資產：</strong> 總市值 - (質押本金 + 信貸餘額)</li>
+                            <li><strong>扣質押淨值：</strong> 總市值 - 質押本金 (通常質押不還本，故獨立觀察)</li>
+                            <li><strong>超額純利：</strong> 預估淨資產 - (原始本金 + 歷年總再投入)</li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="font-bold text-slate-700">4. 稅後配息補貼</h4>
+                        <div class="formula-box">
+                            Tax Benefit = (股息 * 0.6) * (0.085 - 所得稅率)
+                        </div>
+                        <p class="text-xs text-slate-500">假設 60% 為應稅所得，計算 8.5% 可扣抵稅額與個人所得稅率之差額。</p >
                     </div>
                 </section>
             </div>
