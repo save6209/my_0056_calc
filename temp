@@ -3,91 +3,78 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台股多檔監控與複利系統 V15</title>
+    <title>台股大數據複利系統 V16</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: #f1f5f9; font-family: 'Inter', sans-serif; }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .card { @apply bg-white rounded-3xl p-5 shadow-sm border border-slate-200 transition-all; }
+        .card { @apply bg-white rounded-3xl p-5 shadow-sm border border-slate-200; }
         .label-txt { @apply text-[10px] font-extrabold text-slate-400 uppercase tracking-widest mb-1 block; }
         .input-box { @apply w-full text-lg font-bold text-slate-800 outline-none border-b-2 border-slate-100 focus:border-blue-600 bg-transparent py-1; }
         .tab-btn { @apply flex-1 py-3 text-xs md:text-sm font-bold text-slate-500 transition-all rounded-xl; }
         .tab-btn.active { @apply bg-white text-blue-600 shadow-md; }
         .btn-action { @apply p-2 rounded-lg bg-slate-100 hover:bg-blue-600 hover:text-white transition-all font-bold; }
-        @keyframes pulse-green { 0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); } 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); } }
-        .active-dot { animation: pulse-green 2s infinite; @apply bg-green-500 w-2 h-2 rounded-full; }
+        .loading-spinner { border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="min-h-screen p-4 md:p-8">
     <div class="max-w-6xl mx-auto">
         <header class="mb-8 text-center">
-            <h1 class="text-2xl md:text-4xl font-black text-slate-900 tracking-tighter">台股多檔監控系統 <span class="text-blue-600">V15</span></h1>
-            <div class="flex items-center justify-center mt-2 space-x-2">
-                <div class="active-dot"></div>
-                <p id="global-timer" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">系統連線中...</p>
-            </div>
+            <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tighter">台股大數據複利系統 <span class="text-blue-600">V16</span></h1>
+            <p class="text-[10px] text-slate-400 font-bold uppercase mt-2">Historical Backtest & Real-time Monitor</p>
         </header>
 
         <div class="flex bg-slate-200/50 p-1 rounded-[22px] mb-8 max-w-2xl mx-auto">
-            <button onclick="showTab('watch')" class="tab-btn active" id="btn-watch">📡 即時自訂監控</button>
+            <button onclick="showTab('watch')" class="tab-btn active" id="btn-watch">📡 監控與回測</button>
             <button onclick="showTab('calc')" class="tab-btn" id="btn-calc">💰 複利模擬器</button>
-            <button onclick="showTab('info')" class="tab-btn" id="btn-info">📘 系統說明</button>
         </div>
 
         <div id="watch-tab" class="tab-content active space-y-6">
             <div class="card bg-slate-900 p-6 flex flex-col md:flex-row items-center gap-4">
                 <div class="flex-1 w-full">
-                    <label class="label-txt text-slate-500">新增股票代號 (例如: 0056, 2330)</label>
-                    <input type="text" id="new-stock-id" placeholder="輸入代號..." class="bg-transparent text-white text-2xl font-black outline-none border-b-2 border-slate-700 focus:border-blue-500 w-full">
+                    <label class="label-txt text-slate-500">輸入代號開啟 10 年回測分析</label>
+                    <input type="text" id="new-stock-id" placeholder="例如: 0056" class="bg-transparent text-white text-2xl font-black outline-none border-b-2 border-slate-700 focus:border-blue-500 w-full">
                 </div>
-                <button onclick="addStockCard()" class="w-full md:w-auto bg-blue-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/20">
-                    + 新增監控
+                <button onclick="addStockCard()" class="w-full md:w-auto bg-blue-600 text-white px-8 py-4 rounded-2xl font-black hover:bg-blue-500 transition-all shadow-lg">
+                    分析並加入監控
                 </button>
             </div>
 
-            <div id="stock-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div id="stock-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 </div>
         </div>
 
         <div id="calc-tab" class="tab-content space-y-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                <div class="card"><label class="label-txt">目前選定股價</label><input type="number" id="principal-price" value="0" class="input-box text-blue-600" readonly></div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card border-b-4 border-blue-500">
+                    <label class="label-txt">基準股價 (來源於回測)</label>
+                    <input type="number" id="principal-price" value="0" class="input-box text-blue-600" readonly>
+                </div>
                 <div class="card"><label class="label-txt">初始投入 (萬)</label><input type="number" id="principal" value="100" class="input-box"></div>
-                <div class="card bg-blue-50/50"><label class="label-txt text-blue-600">年化殖利率 %</label><input type="number" id="yieldRate" value="7.0" step="0.1" class="input-box text-blue-800"></div>
-                <div class="card"><label class="label-txt">年化增值 %</label><input type="number" id="priceGrowth" value="3.5" step="0.1" class="input-box"></div>
-                <div class="card"><label class="label-txt">所得稅率</label><select id="taxRate" class="input-box"><option value="0.05">5%</option><option value="0.20">20%</option></select></div>
+                <div class="card"><label class="label-txt">歷史平均殖利率 %</label><input type="number" id="yieldRate" value="0" step="0.01" class="input-box"></div>
+                <div class="card"><label class="label-txt">歷史年化增值 %</label><input type="number" id="priceGrowth" value="0" step="0.01" class="input-box"></div>
             </div>
 
-            <div class="card p-8 border-l-8 border-slate-900">
-                <h3 class="font-black text-sm mb-6 uppercase tracking-widest text-slate-400">模擬設定與執行</h3>
-                <button onclick="calculate()" class="w-full bg-slate-900 text-white font-black py-5 rounded-3xl shadow-xl hover:scale-[1.01] active:scale-95 transition-all">開始計算複利成長</button>
+            <div class="card p-6 bg-slate-50 border-2 border-dashed border-slate-300">
+                <div class="flex justify-between items-center mb-4 text-sm font-bold text-slate-500"><span>觀察年數</span><span class="text-blue-600 font-black"><span id="yearVal">10</span> 年</span></div>
+                <input type="range" id="years" min="1" max="30" value="10" oninput="document.getElementById('yearVal').innerText=this.value" class="w-full h-2 bg-slate-200 rounded-lg cursor-pointer">
             </div>
+
+            <button onclick="calculate()" class="w-full bg-slate-900 text-white font-black py-5 rounded-3xl shadow-xl hover:scale-[1.01] transition-all">套用歷史數據執行模擬</button>
 
             <div id="resultArea" class="hidden space-y-4">
                 <div id="sumArea" class="grid grid-cols-2 md:grid-cols-4 gap-3"></div>
-                <div class="card p-0 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-xs text-left"><thead class="bg-slate-800 text-slate-300"><tr id="tableHead"></tr></thead><tbody id="detailBody" class="divide-y divide-slate-100"></tbody></table></div></div>
-            </div>
-        </div>
-
-        <div id="info-tab" class="tab-content space-y-6">
-            <div class="card">
-                <h2 class="font-black text-xl mb-4">V15 版本指南</h2>
-                <ul class="list-disc ml-5 space-y-2 text-slate-600 text-sm">
-                    <li><b>多檔監控：</b>您可以在第一個分頁輸入多個代號，系統會同時追蹤。</li>
-                    <li><b>即時調整：</b>使用卡片上的 <span class="font-bold text-blue-600">+/-</span> 按鈕，可以自定義「價差」。例如現價 38 元，你調整 -1 元，模擬器將以 37 元作為基準。</li>
-                    <li><b>自動帶入：</b>點擊卡片上的「帶入模擬」，數據會自動填入第二分頁。</li>
-                </ul>
+                <div class="card p-0 overflow-hidden"><table class="w-full text-xs text-left"><thead class="bg-slate-800 text-slate-300"><tr><th class="p-4">年份</th><th class="p-4">資產市值</th><th class="p-4 text-emerald-400">當年度股息</th></tr></thead><tbody id="detailBody" class="divide-y divide-slate-100"></tbody></table></div>
             </div>
         </div>
     </div>
 
     <script>
-        let watchlist = ["0056", "0050", "2330"]; // 預設列表
-        let stockDataMap = {}; // 存放各代號的即時數據與 Offset
+        let stockDataMap = {};
 
-        // 1. 分頁控制
         function showTab(tab) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -95,113 +82,119 @@
             document.getElementById('btn-' + tab).classList.add('active');
         }
 
-        // 2. 新增股票卡片
         async function addStockCard() {
-            const idInput = document.getElementById('new-stock-id');
-            const id = idInput.value.trim();
-            if (id && !watchlist.includes(id)) {
-                watchlist.push(id);
-                idInput.value = "";
-                await refreshAllPrices();
-            }
-        }
+            const id = document.getElementById('new-stock-id').value.trim();
+            if (!id) return;
 
-        function removeStock(id) {
-            watchlist = watchlist.filter(item => item !== id);
-            renderCards();
-        }
+            // 1. 取得歷史數據 (過去10年)
+            const today = new Date();
+            const tenYearsAgo = new Date(today.getFullYear() - 10, today.getMonth(), today.getDate()).toISOString().split('T')[0];
+            const nowStr = today.toISOString().split('T')[0];
+            
+            try {
+                // 抓取股價歷史
+                const res = await fetch(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${id}&start_date=${tenYearsAgo}`);
+                const priceResult = await res.json();
+                
+                // 抓取配息歷史 (計算平均殖利率)
+                const divRes = await fetch(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockDividend&data_id=${id}&start_date=${tenYearsAgo}`);
+                const divResult = await divRes.json();
 
-        // 3. 調整價差 (Offset)
-        function adjustOffset(id, amount) {
-            if (!stockDataMap[id]) return;
-            stockDataMap[id].offset += amount;
-            renderCards();
-        }
+                if (priceResult.data.length > 0) {
+                    const firstPrice = priceResult.data[0].close;
+                    const lastPrice = priceResult.data[priceResult.data.length - 1].close;
+                    
+                    // 計算 10 年年化資本增值率 (CAGR)
+                    const years = 10;
+                    const cagr = (Math.pow(lastPrice / firstPrice, 1 / years) - 1) * 100;
+                    
+                    // 計算 10 年平均殖利率
+                    const avgDiv = divResult.data.length > 0 ? 
+                        (divResult.data.reduce((sum, d) => sum + d.CashDividend, 0) / years) : 0;
+                    const avgYield = (avgDiv / lastPrice) * 100;
 
-        // 4. 抓取 API 並渲染卡片
-        async function refreshAllPrices() {
-            document.getElementById('global-timer').innerText = "更新中...";
-            for (let id of watchlist) {
-                try {
-                    const res = await fetch(`https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=${id}&start_date=${new Date(Date.now()-86400000*5).toISOString().split('T')[0]}`);
-                    const result = await res.json();
-                    if (result.data && result.data.length > 0) {
-                        const last = result.data[result.data.length - 1];
-                        if (!stockDataMap[id]) stockDataMap[id] = { offset: 0 };
-                        stockDataMap[id].price = last.close;
-                        stockDataMap[id].change = (((last.close - last.open)/last.open)*100).toFixed(2);
-                    }
-                } catch (e) { console.error(id + " 抓取失敗"); }
-            }
-            renderCards();
-            document.getElementById('global-timer').innerText = "最後更新: " + new Date().toLocaleTimeString();
+                    stockDataMap[id] = {
+                        currentPrice: lastPrice,
+                        cagr: cagr.toFixed(2),
+                        yield: avgYield.toFixed(2),
+                        offset: 0
+                    };
+                    renderCards();
+                }
+            } catch (e) { alert("數據抓取失敗，請檢查代號"); }
         }
 
         function renderCards() {
             const container = document.getElementById('stock-container');
             container.innerHTML = "";
-            watchlist.forEach(id => {
-                const data = stockDataMap[id] || { price: 0, change: 0, offset: 0 };
-                const adjustedPrice = (data.price + data.offset).toFixed(2);
-                const colorClass = data.change >= 0 ? 'text-rose-500' : 'text-green-500';
-
+            Object.keys(stockDataMap).forEach(id => {
+                const s = stockDataMap[id];
                 container.innerHTML += `
-                    <div class="card border-2 border-transparent hover:border-blue-500">
-                        <div class="flex justify-between items-start mb-4">
-                            <div>
-                                <span class="font-black text-2xl text-slate-800">${id}</span>
-                                <span class="block text-[10px] font-bold text-slate-400">市場現價: $${data.price || '---'}</span>
-                            </div>
-                            <button onclick="removeStock('${id}')" class="text-slate-300 hover:text-rose-500">✕</button>
+                    <div class="card border-2 border-slate-100 hover:border-blue-500 shadow-xl">
+                        <div class="flex justify-between items-center mb-4">
+                            <span class="text-3xl font-black">${id}</span>
+                            <span class="text-xs bg-slate-100 px-3 py-1 rounded-full font-bold text-slate-500">10Y BACKTEST</span>
                         </div>
-                        <div class="bg-slate-50 rounded-2xl p-4 mb-4">
-                            <label class="label-txt text-center">調整後預算價</label>
-                            <div class="flex items-center justify-between">
-                                <button onclick="adjustOffset('${id}', -0.5)" class="btn-action">-0.5</button>
-                                <span class="text-3xl font-black text-blue-600">$${adjustedPrice}</span>
-                                <button onclick="adjustOffset('${id}', 0.5)" class="btn-action">+0.5</button>
+                        <div class="grid grid-cols-2 gap-4 mb-6">
+                            <div class="bg-blue-50 p-3 rounded-2xl text-center">
+                                <label class="label-txt text-blue-600">10Y 年化增值</label>
+                                <span class="text-xl font-black text-blue-800">${s.cagr}%</span>
                             </div>
-                            <div class="text-center text-[10px] font-bold text-slate-400 mt-2">價差偏移: ${data.offset.toFixed(1)}</div>
+                            <div class="bg-emerald-50 p-3 rounded-2xl text-center">
+                                <label class="label-txt text-emerald-600">10Y 平均殖利率</label>
+                                <span class="text-xl font-black text-emerald-800">${s.yield}%</span>
+                            </div>
                         </div>
-                        <button onclick="applyToCalc('${id}', ${adjustedPrice})" class="w-full bg-slate-900 text-white py-3 rounded-xl font-bold text-sm hover:bg-blue-600 transition-all">
-                            帶入模擬器
+                        <div class="flex items-center justify-between bg-slate-900 text-white p-4 rounded-2xl mb-4">
+                            <button onclick="adjustPrice('${id}', -1)" class="text-xl font-bold px-3">-</button>
+                            <div class="text-center">
+                                <label class="label-txt text-slate-500">調整後進場價</label>
+                                <span class="text-2xl font-black">$${(parseFloat(s.currentPrice) + s.offset).toFixed(1)}</span>
+                            </div>
+                            <button onclick="adjustPrice('${id}', 1)" class="text-xl font-bold px-3">+</button>
+                        </div>
+                        <button onclick="applyAndGo('${id}')" class="w-full bg-blue-600 text-white font-black py-4 rounded-2xl hover:bg-blue-700 transition-all">
+                            代入歷史數據模擬
                         </button>
                     </div>
                 `;
             });
         }
 
-        // 5. 將選定股票帶入模擬分頁
-        function applyToCalc(id, price) {
-            document.getElementById('principal-price').value = price;
-            // 假設一個邏輯：若為 0056 則預設殖利率 7%，其餘 5% (可自訂)
-            document.getElementById('yieldRate').value = id.startsWith('00') ? 7.0 : 5.0;
-            showTab('calc');
-            alert(`已選定 ${id}，調整價 $${price}。請至模擬器設定本金。`);
+        function adjustPrice(id, val) {
+            stockDataMap[id].offset += val;
+            renderCards();
         }
 
-        // 6. 複利計算邏輯 (繼承 V12-14)
+        function applyAndGo(id) {
+            const s = stockDataMap[id];
+            document.getElementById('principal-price').value = (parseFloat(s.currentPrice) + s.offset).toFixed(1);
+            document.getElementById('yieldRate').value = s.yield;
+            document.getElementById('priceGrowth').value = s.cagr;
+            showTab('calc');
+        }
+
         function calculate() {
-            const price = parseFloat(document.getElementById('principal-price').value) || 1;
-            const principalWan = parseFloat(document.getElementById('principal').value) || 0;
-            const yr = parseFloat(document.getElementById('yieldRate').value) / 100;
-            const pg = parseFloat(document.getElementById('priceGrowth').value) / 100;
-            
-            let currentMV = principalWan;
+            const principal = parseFloat(document.getElementById('principal').value) || 0;
+            const yieldRate = parseFloat(document.getElementById('yieldRate').value) / 100;
+            const growthRate = parseFloat(document.getElementById('priceGrowth').value) / 100;
+            const years = parseInt(document.getElementById('years').value);
+
+            let currentMV = principal;
             let html = "";
-            for (let i = 1; i <= 10; i++) {
-                let div = currentMV * yr;
-                currentMV = currentMV * (1 + pg) + div;
-                html += `<tr><td class="p-4 font-bold text-slate-400">${i}Y</td><td class="p-4 font-black text-slate-800">${currentMV.toFixed(0)}萬</td><td class="p-4 text-emerald-600 font-bold">+${div.toFixed(1)}萬</td></tr>`;
+            for (let i = 1; i <= years; i++) {
+                let dividend = currentMV * yieldRate;
+                currentMV = currentMV * (1 + growthRate) + dividend;
+                html += `<tr>
+                    <td class="p-4 font-bold text-slate-400">${i}Y</td>
+                    <td class="p-4 font-black text-slate-800">${currentMV.toFixed(1)} 萬</td>
+                    <td class="p-4 text-emerald-600 font-bold">${dividend.toFixed(2)} 萬</td>
+                </tr>`;
             }
             document.getElementById('detailBody').innerHTML = html;
-            document.getElementById('tableHead').innerHTML = `<th class="p-4">年份</th><th class="p-4">預估市值</th><th class="p-4">當年配息</th>`;
             document.getElementById('resultArea').classList.remove('hidden');
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
         }
-
-        // 初始化
-        refreshAllPrices();
-        setInterval(refreshAllPrices, 60000);
     </script>
 </body>
 </html>
